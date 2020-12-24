@@ -69,14 +69,12 @@ def get_mutual(
               f"&target_uids={t_ids if t_ids else ''}&order={order if order else ''}" \
               f"&count={count if count else ''}&offset={offset if offset else 0}" \
               f"&v={config.VK_CONFIG['version']}"
-        print(url)
         r = session.get(url).json()
         try:
             return r['response']
         except KeyError:
             raise APIError(r['error'])
 
-    print(target_uids)
     url = f"friends.getMutual?access_token={config.VK_CONFIG['access_token']}"
     url += f"&source_uid={source_uid}" if source_uid else ''
     url += f"&target_uid={target_uid}" if target_uid else ''
@@ -85,8 +83,6 @@ def get_mutual(
     url += f"&count={count}" if count else ''
     url += f"&offset={offset}" if offset else ''
     url += f"&v={config.VK_CONFIG['version']}"
-
-    print(url)
 
     r = session.get(url).json()
     try:
