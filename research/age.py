@@ -30,7 +30,7 @@ def age_predict(user_id: int) -> tp.Optional[float]:
                 ages.append(calculate_age(dt.date(day=bdate[0], month=bdate[1], year=bdate[2])))
         except (TypeError, KeyError) as e:
             continue
-    return statistics.median(ages)
+    return statistics.median(ages) if ages else None
 
 
 if __name__ == "__main__":

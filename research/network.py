@@ -18,11 +18,14 @@ def ego_network(
     :param user_id: Идентификатор пользователя, для которого строится граф друзей.
     :param friends: Идентификаторы друзей, между которыми устанавливаются связи.
     """
+    print(friends)
     if not friends:
         friends = get_friends(user_id=user_id, fields=["nickname"])
+    print(friends)
 
-    friends = [user["id"] for user in (friends if isinstance(friends, list) else friends.items) if isinstance(user, dict) and not user.get("deactivated")]
-
+    # friends = [user["id"] for user in (friends if isinstance(friends, list) else friends.items) if isinstance(user, dict) and not user.get("deactivated")]
+    print(friends)
+    print(user_id, friends)
     mutual = get_mutual(source_uid=user_id, target_uids=friends)
     res = []
     for m in mutual:
