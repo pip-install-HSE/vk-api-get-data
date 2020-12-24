@@ -64,38 +64,23 @@ def get_mutual(
     :param progress: Callback для отображения прогресса.
     """
     def get(t_ids=None):
-        url = f"friends.getMutual?access_token={config.VK_CONFIG['access_token']}" \
-              f"&source_uid={source_uid}&target_uid={target_uid if target_uid else ''}" \
-              f"&target_uids={t_ids if t_ids else ''}&order={order if order else ''}" \
-              f"&count={count if count else ''}&offset={offset if offset else 0}" \
-              f"&v={config.VK_CONFIG['version']}"
-        r = session.get(url).json()
+        r = session.get(
+            f"friends.getMutual?access_token={config.VK_CONFIG['access_token']}"
+            f"&source_uid={source_uid}&target_uid={target_uid if target_uid else ''}"
+            f"&target_uids={t_ids if t_ids else ''}&order={order if order else ''}"
+            f"&count={count if count else ''}&offset={offset if offset else 0}"
+            f"&v={config.VK_CONFIG['version']}").json()
         try:
             return r['response']
         except KeyError:
             raise APIError(r['error'])
 
-    url = f"friends.getMutual?access_token={config.VK_CONFIG['access_token']}"
-    url += f"&source_uid={source_uid}" if source_uid else ''
-    url += f"&target_uid={target_uid}" if target_uid else ''
-    target_uids_str = f"{','.join(str(target_uid) for target_uid in target_uids)}"
-    url += f"&target_uids={target_uids_str}" if target_uids else ''
-    url += f"&count={count}" if count else ''
-    url += f"&offset={offset}" if offset else ''
-    url += f"&v={config.VK_CONFIG['version']}"
-
-    r = session.get(url).json()
-    try:
-        return r['response']
-    except KeyError:
-        raise APIError(r['error'])
-
-    # if target_uids:
-    #     x = []
-    #     for t in progress(range(int(len(target_uids)/100))):
-    #         offset = 100*t
-    #         x += [MutualFriends(**f) for f in get(target_uids)]
-    #         time.sleep(1)
-    #     return x
-    # else:
-    #     return get()
+    if target_uids:
+        x = []
+        for t in progress(range(int(len(target_uids)/100))):
+            offset = 100*t
+            time.sleep(1)
+            x += [MutualFriends(**f) for f in get(target_uids)]
+        return x
+    else:
+        return get()

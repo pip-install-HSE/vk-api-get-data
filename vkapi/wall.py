@@ -1,7 +1,7 @@
 import textwrap
 import time
 import typing as tp
-import string
+import pymorphy2
 import re
 
 import pandas as pd
@@ -66,24 +66,24 @@ def get_wall_execute(
     code = """
     var calls = 0,
         items = [],
-        all_count = 0,
+        records = 0,
         params = """ + str(params_) + """,
-        response;
+        response = {"count":"1"};
     
     if (params.count == 0){
         params.count = 100;
         response = API.wall.get(params);
-        all_count = response.count;
+        records = response.count;
         items = items + response.items;
         calls = calls + 1;
     }else{
-        all_count = params.count;
+        records = params.count;
         if (params.count >= 100){
             params.count = 100;
         }        
     }
     var max_calls = """ + str(max_count) + """ / 100; 
-    while(calls < max_calls && all_count > params.offset) {
+    while(calls < max_calls && records > params.offset) {
 
         calls = calls + 1;  
 
@@ -92,7 +92,7 @@ def get_wall_execute(
         params.offset = params.offset + params.count;
     };
     return {
-        all_count: all_count,
+        count: records,
         items: items
      };"""
 
@@ -102,10 +102,10 @@ def get_wall_execute(
         "v": "5.126"
     }
     r = {"items": [],
-         "all_count": 1}
+         "count": 1}
 
-    with progress(total=r["all_count"]) as pbar:
-        while len(r['items']) < r["all_count"]:
+    with progress(total=r["count"]) as pbar:
+        while len(r['items']) < r["count"]:
             j = session.post(
                 url="execute",
                 data=params
@@ -115,29 +115,16 @@ def get_wall_execute(
 
             try:
                 r["items"] += j["response"]["items"]
-                r["all_count"] = j["response"]["all_count"]
+                r["count"] = j["response"]["count"]
             except KeyError:
                 raise APIError(j["error"])
 
-            params["count"] = r["all_count"]
-            pbar.total = r["all_count"]
+            params["count"] = r["count"]
+            pbar.total = r["count"]
             pbar.update(len(r["items"]) - params_["offset"])
             params_["offset"] = len(r["items"])
 
-    # texts = []
-    # for i in r["items"]:
-    #     text = i["text"]
-    #     text = re.sub(r'[^\w\s]', '', text)
-    #     emoji_pattern = re.compile("["
-    #                                u"\U0001F600-\U0001F64F"  # emoticons
-    #                                u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-    #                                u"\U0001F680-\U0001F6FF"  # transport & map symbols
-    #                                u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-    #                                "]+", flags=re.UNICODE)
-    #     text = emoji_pattern.sub(r'', text)
-    #     text = re.sub(r'http\S+', '', text)
-    #     texts.append(text)
-    return pd.DataFrame(r)
+    return pd.DataFrame(r["items"])
 
 
 if __name__ == "__main__":

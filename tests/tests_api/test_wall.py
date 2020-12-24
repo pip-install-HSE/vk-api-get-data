@@ -57,7 +57,7 @@ class GetWallTestCase(unittest.TestCase):
             json={
                 "response": {
                     "count": 6000,
-                    "items": [],
+                    "items": [i for i in range(2500)],
                 }
             },
             status=200,
